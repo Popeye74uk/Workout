@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roulette">
+<meta id="meta-theme" name="theme-color" content="#0e1014">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>Workout Roulette</title>
+<style>
+:root{color-scheme:dark;--bg:#0e1014;--s1:#16191f;--s2:#1d2128;--line:rgba(255,255,255,.08);--tx:#f2f4f7;--tx2:#98a1b0;--ac:#7280ff;--acx:#0b0d14;--gold:#e8b44a;--ok:#3ecf8e;--bad:#ff6371}
+[data-theme=light]{color-scheme:light;--bg:#f2f3f6;--s1:#fff;--s2:#eceef3;--line:rgba(15,20,30,.1);--tx:#12151b;--tx2:#5b6474;--ac:#4455ee;--acx:#fff;--gold:#a86f08;--ok:#12865a;--bad:#d02a40}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{min-height:100dvh}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-appearance:none;appearance:none}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.hidden{display:none!important}
+.muted{color:var(--tx2);font-size:13px}
+svg.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+.shell{max-width:480px;margin:0 auto;min-height:100dvh;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.chips{display:flex;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:var(--s1);border:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+.chip svg{width:16px;height:16px}.chip.gold svg{color:var(--gold)}.chip:not(.gold) svg{color:var(--bad)}
+.rank-row{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.rank{font-weight:600;font-size:14px}
+.bar{height:4px;background:var(--s2);border-radius:4px;overflow:hidden;margin-top:8px}
+#bar-fill{height:100%;background:var(--ac);border-radius:4px;transition:width .4s ease}
+main{padding:16px;display:flex;flex-direction:column;gap:16px}
+.pane{display:none;flex-direction:column;gap:16px}.pane.on{display:flex}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+h2{font-size:15px;font-weight:600}
+.link{background:none;border:0;color:var(--ac);font-size:13px;font-weight:500}
+.debt{border-left:3px solid var(--bad)}
+.debt h2{margin-bottom:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0;padding-top:0}.row:last-child{padding-bottom:0}
+.row .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.slot{text-align:center;padding:22px 12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:14px}
+.slot-ex{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin:6px 0;overflow-wrap:anywhere}
+.slot-dur{font-size:15px;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:15px;transition:transform .1s,opacity .1s}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5}
+.btn-p{background:var(--ac);color:var(--acx);width:100%}
+.btn-s{background:var(--s2);border-color:var(--line)}
+.btn-ok{background:var(--ok);color:#06150d}
+.btn-bad{background:transparent;border-color:var(--bad);color:var(--bad)}
+.btn-d{background:var(--bad);color:#fff}
+.btn-sm{height:36px;padding:0 12px;font-size:13px;border-radius:10px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timer{position:relative;width:224px;height:224px;margin:4px auto 16px}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer circle{fill:none;stroke-width:8}
+.t-track{stroke:var(--s2)}.t-prog{stroke:var(--ac);stroke-linecap:round;transition:stroke-dashoffset .3s linear}
+.timer.done .t-prog{stroke:var(--ok)}
+.t-mid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#t-status{position:absolute;left:0;right:0;top:calc(50% - 58px);text-align:center}
+.t-digits{font-size:54px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.controls{display:flex;gap:10px;margin-bottom:16px}.controls .btn:first-child{flex:1}
+.divider{border-top:1px solid var(--line);padding-top:16px}
+.divider p{text-align:center;margin-bottom:10px}
+input[type=text],input[type=number],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;outline:0}
+input:focus,textarea:focus{border-color:var(--ac)}
+.field{display:block;font-size:13px;color:var(--tx2);margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--bg);border:1px solid var(--line);padding:4px;border-radius:12px}
+.seg button{border:0;background:none;color:var(--tx2);font-weight:600;font-size:13px;padding:9px 6px;border-radius:9px}
+.seg button.on{background:var(--s2);color:var(--tx)}
+.add{display:flex;gap:8px;margin:14px 0}
+.add .btn{width:auto;flex-shrink:0}
+.item{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.item .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.icon{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--s2);color:var(--tx2)}
+.icon.bad{color:var(--bad)}
+.sw{position:relative;width:48px;height:28px;border-radius:14px;border:0;background:var(--s2);flex-shrink:0;box-shadow:inset 0 0 0 1px var(--line);transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--tx2);transition:transform .15s,background .15s}
+.sw[aria-checked=true]{background:var(--ac)}.sw[aria-checked=true]::after{transform:translateX(20px);background:var(--acx)}
+.s-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.s-row:first-of-type{border-top:0;padding-top:0}
+.s-row small{display:block;color:var(--tx2);font-size:13px}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg);border-top:1px solid var(--line);padding:6px 12px calc(6px + env(safe-area-inset-bottom))}
+.dock-in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.dock button{border:0;background:none;color:var(--tx2);display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;font-size:11px;font-weight:600;border-radius:10px}
+.dock button.on{color:var(--ac)}
+.toast{position:fixed;left:50%;top:calc(76px + env(safe-area-inset-top));transform:translate(-50%,-12px);z-index:9500;background:var(--s2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;display:flex;gap:14px;align-items:center;max-width:92vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}.toast.act{pointer-events:auto}
+.toast button{background:none;border:0;color:var(--ac);font-weight:600}
+.sheet{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet-card{width:100%;max-width:480px;background:var(--s1);border-radius:22px 22px 0 0;border:1px solid var(--line);padding:24px 20px calc(20px + env(safe-area-inset-bottom));text-align:center;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.6}}
+.sheet-ic{width:52px;height:52px;border-radius:16px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--ac)}
+.sheet-ic svg{width:26px;height:26px}
+.sheet h3{font-size:20px;font-weight:700;margin:4px 0 6px}
+.hl{margin:12px 0 4px;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--bad);color:var(--bad);font-weight:600}
+.sheet-actions{display:grid;gap:10px;margin-top:18px}
+.sheet-actions:has(button:nth-child(2)){grid-template-columns:1fr 1fr}
+#tip{order:-3}#debts{order:-2}#active{order:-1}
+.tip{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stats div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.stats span{font-size:12px;color:var(--tx2)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button id="toast-act" class="hidden"></button></div>
+
+<div class="shell">
+<header class="top">
+  <div class="top-row">
+    <h1>Workout Roulette</h1>
+    <div class="chips">
+      <span class="chip gold" title="Stars"><i data-ic="star"></i><b id="h-stars">0</b></span>
+      <span class="chip" title="Streak"><i data-ic="flame"></i><b id="h-streak">0</b></span>
+    </div>
+  </div>
+  <div class="rank-row"><span id="rank-name" class="rank">Rookie</span><span id="rank-next" class="muted"></span></div>
+  <div class="bar"><div id="bar-fill"></div></div>
+</header>
+
+<main>
+<section id="tab-play" class="pane on">
+  <div id="tip" class="card tip hidden"><div><b>Install on your iPhone</b><div class="muted">Tap Share, then Add to Home Screen for a full-screen app that works offline.</div></div><button id="tip-x" class="icon" aria-label="Dismiss"><i data-ic="x"></i></button></div>
+  <div id="debts" class="card debt hidden">
+    <h2>Forfeits owed (<span id="debt-count">0</span>)</h2>
+    <div id="debt-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Next workout</h2><button id="to-lists" class="link">Edit lists and times</button></div>
+    <div class="slot">
+      <div id="slot-kicker" class="muted">Ready to spin</div>
+      <div id="slot-ex" class="slot-ex">Spin to pick a workout</div>
+      <div id="slot-dur" class="slot-dur"></div>
+    </div>
+    <button id="spin" class="btn btn-p"><i data-ic="dice"></i><span id="spin-label">Spin</span></button>
+  </div>
+
+  <div id="active" class="card hidden">
+    <div class="card-h">
+      <div><div class="muted">In progress</div><h2 id="a-title" style="font-size:18px"></h2></div>
+      <div style="text-align:right"><div class="muted">Reward</div><b id="a-reward" style="color:var(--gold)"></b></div>
+    </div>
+    <div id="timer" class="timer">
+      <svg viewBox="0 0 224 224"><circle class="t-track" cx="112" cy="112" r="104"/><circle id="t-prog" class="t-prog" cx="112" cy="112" r="104"/></svg>
+      <div class="t-mid"><span id="t-status" class="muted">Ready</span><span id="t-digits" class="t-digits">00:00</span></div>
+    </div>
+    <div class="controls">
+      <button id="t-start" class="btn btn-s"></button>
+      <button id="t-reset" class="btn btn-s" aria-label="Reset timer"><i data-ic="reset"></i></button>
+      <button id="t-skip" class="btn btn-s hidden">Skip</button>
+    </div>
+    <div class="divider">
+      <p class="muted">How did it go?</p>
+      <div class="pair">
+        <button id="done" class="btn btn-ok"><i data-ic="check"></i>Completed</button>
+        <button id="bail" class="btn btn-bad">Bail out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Recent activity</h2><span id="h-count" class="muted"></span></div>
+    <div class="stats"><div><b id="st-w">0</b><span>Workouts</span></div><div><b id="st-m">0</b><span>Minutes</span></div><div><b id="st-b">0</b><span>Best streak</span></div></div>
+    <div id="history"></div>
+  </div>
+</section>
+
+<section id="tab-lists" class="pane">
+  <div class="card">
+    <div class="card-h"><h2>Time window</h2></div>
+    <div class="two">
+      <div><label class="field" for="min-t">Minimum (min)</label><input id="min-t" type="number" inputmode="numeric" min="1" max="120"></div>
+      <div><label class="field" for="max-t">Maximum (min)</label><input id="max-t" type="number" inputmode="numeric" min="2" max="180"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>Lists</h2><button id="bulk-toggle" class="link">Paste many</button></div>
+    <div class="seg">
+      <button id="sub-ex" class="on">Exercises (<span id="n-ex">0</span>)</button>
+      <button id="sub-ff">Forfeits (<span id="n-ff">0</span>)</button>
+    </div>
+    <form id="add-form" class="add">
+      <input id="new-item" type="text" maxlength="65" placeholder="Add an exercise" aria-label="New item" autocomplete="off" required>
+      <button class="btn btn-s" type="submit" style="height:auto"><i data-ic="plus"></i>Add</button>
+    </form>
+    <div id="bulk" class="hidden" style="margin-bottom:14px">
+      <label class="field" for="bulk-text">One item per line</label>
+      <textarea id="bulk-text" rows="4"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+        <button id="bulk-cancel" class="btn btn-s btn-sm">Cancel</button>
+        <button id="bulk-save" class="btn btn-ok btn-sm">Add all</button>
+      </div>
+    </div>
+    <div id="items"></div>
+  </div>
+</section>
+
+<section id="tab-settings" class="pane">
+  <div class="card">
+    <div class="card-h"><h2>Appearance and sound</h2></div>
+    <div class="s-row"><div>Theme</div><div class="seg" id="theme-seg" style="width:210px"><button data-theme-v="system">Auto</button><button data-theme-v="light">Light</button><button data-theme-v="dark">Dark</button></div></div>
+    <div class="s-row"><div>Sound effects<small>Reel ticks, chimes and buzzers</small></div><button id="sw-sound" class="sw" role="switch" aria-label="Sound effects"></button></div>
+    <div class="s-row"><div>15-second test timer<small>Shortens every workout for testing</small></div><button id="sw-demo" class="sw" role="switch" aria-label="15-second test timer"></button></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>Backup</h2></div>
+    <p class="muted" style="margin-bottom:12px">Export one file with your exercises, forfeits, settings, stars and history. Import it later to restore everything.</p>
+    <div class="pair">
+      <button id="exp" class="btn btn-s"><i data-ic="down"></i>Export</button>
+      <label class="btn btn-s" style="cursor:pointer"><i data-ic="up"></i>Import<input id="imp" type="file" accept=".json,application/json" class="hidden"></label>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>Reset</h2></div>
+    <div class="pair">
+      <button id="reset-stats" class="btn btn-s btn-sm">Clear progress</button>
+      <button id="reset-all" class="btn btn-bad btn-sm">Reset everything</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<nav class="dock" aria-label="Main"><div class="dock-in">
+  <button data-tab="play" class="on"><i data-ic="dice"></i>Play</button>
+  <button data-tab="lists"><i data-ic="list"></i>Lists</button>
+  <button data-tab="settings"><i data-ic="sliders"></i>Settings</button>
+</div></nav>
+</div>
+
+<div id="sheet" class="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-card">
+    <div id="sh-ic" class="sheet-ic"></div>
+    <div id="sh-kick" class="muted"></div>
+    <h3 id="sh-title"></h3>
+    <p id="sh-body" class="muted"></p>
+    <div id="sh-hl" class="hl hidden"></div>
+    <div id="sh-actions" class="sheet-actions"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const KEY = 'workout_roulette_clean_v4', OLD = 'workout_roulette_clean_v3';
+const $ = id => document.getElementById(id);
+const DEF_EX = ['Kettlebell Swings','Push-Up & Core Intervals','Shadowboxing Combos','Plank & Hollow Hold Circuit','Full-Body Mobility & Stretch','Bodyweight Squats & Lunges','Brisk Incline Walk / Stairs','Burpee EMOM'];
+const DEF_FF = ['Ice Cold Shower (2 Full Mins)','£5 Into the Charity Jar','No Sweet Treats Tomorrow','30 Penalty Burpees Before Bed','No Social Media Scrolling Tonight','Clean One Kitchen Drawer'];
+
+/* ---------- icons ---------- */
+const P = {
+  dice:'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r=".6"/><circle cx="12" cy="12" r=".6"/><circle cx="15.5" cy="15.5" r=".6"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  sliders:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  flame:'<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.5 1 2 2 2 0-3-1-5 1-8z"/>',
+  play:'<path d="M7 5v14l12-7z"/>', pause:'<path d="M8 5v14M16 5v14"/>',
+  reset:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>', check:'<path d="m5 12 5 5 9-10"/>',
+  alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>', plus:'<path d="M12 5v14M5 12h14"/>', x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  down:'<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>', up:'<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>'
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
+document.querySelectorAll('[data-ic]').forEach(el => { el.outerHTML = ic(el.dataset.ic); });
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- state ---------- */
+const fresh = () => ({ theme:'system', soundEnabled:true, minTime:10, maxTime:30, timeStep:5, demoMode:false,
+  exercises:DEF_EX.slice(), forfeits:DEF_FF.slice(), stars:0, streak:0, workouts:0, minutes:0, bestStreak:0, tipDismissed:false, activeDebts:[], history:[], currentChallenge:null });
+
+function clean(p) {
+  const d = fresh();
+  if (!p || typeof p !== 'object') return d;
+  const num = (v, lo, hi, f) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v))) : f; };
+  const strs = (a, f) => Array.isArray(a) ? [...new Set(a.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim()))] : f;
+  if (['light','dark','system'].includes(p.theme)) d.theme = p.theme;
+  d.soundEnabled = p.soundEnabled !== false;
+  d.demoMode = !!p.demoMode;
+  d.minTime = num(p.minTime, 1, 120, 10);
+  d.maxTime = Math.max(d.minTime + 1, num(p.maxTime, 2, 180, 30));
+  d.timeStep = num(p.timeStep, 1, 60, 5);
+  d.exercises = strs(p.exercises, d.exercises);
+  d.forfeits = strs(p.forfeits, d.forfeits);
+  d.stars = num(p.stars, 0, 1e6, 0);
+  d.streak = num(p.streak, 0, 1e6, 0);
+  if (Array.isArray(p.activeDebts)) d.activeDebts = p.activeDebts.filter(x => x && x.title).map((x, i) => ({ id: Number(x.id) || Date.now() + i, title: String(x.title), skipped: String(x.skipped || '') }));
+  if (Array.isArray(p.history)) d.history = p.history.filter(x => x && x.title).slice(0, 100).map((x, i) => ({ id: Number(x.id) || Date.now() + i, type: x.type === 'completed' ? 'completed' : 'forfeit', title: String(x.title), badge: String(x.badge || ''), time: String(x.time || ''), at: Number(x.at) || 0 }));
+  const done = d.history.filter(h => h.type === 'completed');
+  d.workouts = num(p.workouts, 0, 1e6, done.length);
+  d.minutes = num(p.minutes, 0, 1e7, done.reduce((a, h) => a + (parseInt(h.title, 10) || 0), 0));
+  d.bestStreak = Math.max(d.streak, num(p.bestStreak, 0, 1e6, 0));
+  d.tipDismissed = !!p.tipDismissed;
+  const c = p.currentChallenge;
+  if (c && c.exercise && Number(c.totalSeconds) > 0) {
+    d.currentChallenge = { exercise: String(c.exercise), durationMins: num(c.durationMins, 1, 180, 10), totalSeconds: num(c.totalSeconds, 1, 1e5, 600),
+      remainingSeconds: num(c.remainingSeconds, 0, 1e5, num(c.totalSeconds, 1, 1e5, 600)), endAt: Number(c.endAt) > 0 ? Number(c.endAt) : null };
+  }
+  return d;
+}
+let S = (() => { try { const r = localStorage.getItem(KEY) || localStorage.getItem(OLD); if (r) { const p = JSON.parse(r); return clean(p.exercises ? p : p.data); } } catch (e) {} return fresh(); })();
+const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const save = () => { persist(); render(); };
+
+let holdActive = false, lastEx = '', tab = 'exercises', editIdx = null, focusEdit = false, spinning = false, toastT = null, tick = null, wake = null;
+
+/* ---------- toast & sheet ---------- */
+function toast(msg, label, fn) {
+  $('toast-msg').textContent = msg;
+  const b = $('toast-act');
+  b.classList.toggle('hidden', !label);
+  $('toast').classList.toggle('act', !!label);
+  if (label) { b.textContent = label; b.onclick = () => { $('toast').classList.remove('show'); fn(); }; }
+  $('toast').classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => $('toast').classList.remove('show'), label ? 5000 : 2300);
+}
+function sheet(o) {
+  return new Promise(res => {
+    const el = $('sheet');
+    const close = v => { el.classList.remove('open'); res(v); };
+    $('sh-ic').innerHTML = ic(o.icon || 'alert');
+    $('sh-kick').textContent = o.kicker || '';
+    $('sh-title').textContent = o.title;
+    $('sh-body').textContent = o.body || '';
+    $('sh-hl').textContent = o.hl || '';
+    $('sh-hl').classList.toggle('hidden', !o.hl);
+    const a = $('sh-actions'); a.innerHTML = '';
+    o.actions.forEach(x => { const b = document.createElement('button'); b.className = 'btn ' + (x.cls || 'btn-s'); b.textContent = x.label; b.onclick = () => close(x.value); a.appendChild(b); });
+    el.onclick = e => { if (e.target === el) close(o.dismiss); };
+    el.classList.add('open');
+  });
+}
+const ask = (title, body, ok, danger) => sheet({ title, body, dismiss: false, actions: [{ label: 'Cancel', value: false }, { label: ok, cls: danger ? 'btn-d' : 'btn-p', value: true }] });
+
+/* ---------- audio ---------- */
+let AC = null;
+function audio() {
+  if (!S.soundEnabled) return null;
+  try { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; AC = AC || new A(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; }
+}
+function tone(f, at, dur, type, vol) {
+  const c = audio(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + .02);
+}
+const playTick = f => tone(f || 560, 0, .045, 'triangle', .07);
+const fanfare = () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * .09, i === 3 ? .45 : .16, 'triangle', .14));
+const buzzer = () => [185, 140].forEach((f, i) => tone(f, i * .2, .24, 'sawtooth', .12));
+
+/* ---------- confetti ---------- */
+const cv = $('fx'), cx = cv.getContext('2d');
+let parts = [], raf = null;
+const fit = () => { cv.width = innerWidth; cv.height = innerHeight; };
+addEventListener('resize', fit); fit();
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  fit();
+  const cols = ['#7280ff', '#e8b44a', '#3ecf8e', '#f2f4f7'];
+  for (let i = 0; i < 70; i++) {
+    const a = Math.PI * 2 * i / 70 + (Math.random() - .5) * .4, s = 4 + Math.random() * 9;
+    parts.push({ x: innerWidth / 2, y: innerHeight * .4, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 4, z: 5 + Math.random() * 5, c: cols[i % 4], a: 1 });
+  }
+  if (!raf) step();
+}
+function step() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .24; p.vx *= .985; p.a -= .015; cx.globalAlpha = Math.max(0, p.a); cx.fillStyle = p.c; cx.fillRect(p.x, p.y, p.z, p.z * .6); });
+  parts = parts.filter(p => p.a > 0);
+  if (parts.length) raf = requestAnimationFrame(step); else { cx.clearRect(0, 0, cv.width, cv.height); raf = null; }
+}
+
+/* ---------- timer (timestamp based, survives screen lock) ---------- */
+const CIRC = 2 * Math.PI * 104;
+$('t-prog').style.strokeDasharray = CIRC;
+const rem = () => { const c = S.currentChallenge; if (!c) return 0; return c.endAt ? Math.max(0, Math.ceil((c.endAt - Date.now()) / 1000)) : c.remainingSeconds; };
+const running = () => !!(S.currentChallenge && S.currentChallenge.endAt);
+const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+async function lock() { try { if ('wakeLock' in navigator && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) {} }
+function unlock() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+function stopLoop() { clearInterval(tick); tick = null; unlock(); }
+function loop() { clearInterval(tick); tick = setInterval(onTick, 250); lock(); onTick(); }
+function onTick() {
+  const c = S.currentChallenge;
+  if (!c || !c.endAt) { stopLoop(); return; }
+  if (rem() <= 0) { c.remainingSeconds = 0; c.endAt = null; stopLoop(); persist(); fanfare(); toast('Time is up. Log your result below.'); }
+  paintTimer();
+}
+function startTimer() {
+  const c = S.currentChallenge; if (!c) return;
+  audio();
+  if (c.remainingSeconds <= 0) c.remainingSeconds = c.totalSeconds;
+  c.endAt = Date.now() + c.remainingSeconds * 1000;
+  persist(); loop();
+}
+function pauseTimer() {
+  const c = S.currentChallenge; if (!c) return;
+  if (c.endAt) { c.remainingSeconds = rem(); c.endAt = null; }
+  stopLoop(); persist(); paintTimer();
+}
+function paintTimer() {
+  const c = S.currentChallenge; if (!c) return;
+  const r = rem(), run = running();
+  $('t-digits').textContent = fmt(r);
+  $('t-prog').style.strokeDashoffset = CIRC * (1 - (c.totalSeconds ? r / c.totalSeconds : 0));
+  $('timer').classList.toggle('done', r === 0);
+  $('t-status').textContent = r === 0 ? 'Time is up' : run ? 'Counting down' : r < c.totalSeconds ? 'Paused' : 'Ready';
+  $('t-start').innerHTML = r === 0 ? ic('play') + 'Restart' : run ? ic('pause') + 'Pause' : ic('play') + (r < c.totalSeconds ? 'Resume' : 'Start');
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && running()) loop(); });
+
+/* ---------- rank ---------- */
+const RANKS = [[0, 'Rookie'], [4, 'Challenger'], [12, 'Iron Streak'], [25, 'Spartan']];
+function rankOf(s) {
+  let i = 0; RANKS.forEach((r, k) => { if (s >= r[0]) i = k; });
+  const n = RANKS[i + 1];
+  return { name: RANKS[i][1], next: n ? (n[0] - s) + ' to ' + n[1] : 'Top rank reached', pct: n ? (s - RANKS[i][0]) / (n[0] - RANKS[i][0]) * 100 : 100 };
+}
+
+/* ---------- render ---------- */
+const mq = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const t = S.theme === 'system' ? (mq.matches ? 'dark' : 'light') : S.theme;
+  document.documentElement.dataset.theme = t;
+  $('meta-theme').content = t === 'dark' ? '#0e1014' : '#f2f3f6';
+}
+if (mq.addEventListener) mq.addEventListener('change', applyTheme);
+const rewardOf = m => m >= 25 ? 2 : 1;
+const whenOf = h => h.at ? new Date(h.at).toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + new Date(h.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : h.time;
+const range = () => S.minTime + '–' + S.maxTime + ' min';
+
+function render() {
+  applyTheme();
+  $('h-stars').textContent = S.stars; $('h-streak').textContent = S.streak;
+  const rk = rankOf(S.stars);
+  $('rank-name').textContent = rk.name; $('rank-next').textContent = rk.next;
+  $('bar-fill').style.width = Math.round(rk.pct) + '%';
+
+  if (!S.currentChallenge && !spinning) { $('slot-dur').textContent = range(); }
+  $('spin-label').textContent = S.currentChallenge ? 'Spin again' : 'Spin';
+
+  $('debts').classList.toggle('hidden', !S.activeDebts.length);
+  $('debt-count').textContent = S.activeDebts.length;
+  $('debt-list').innerHTML = S.activeDebts.map(d => `<div class="row"><div class="t">${esc(d.title)}<div class="muted">Skipped ${esc(d.skipped)}</div></div><button class="btn btn-ok btn-sm" data-pay="${d.id}">Done</button></div>`).join('');
+
+  const c = S.currentChallenge;
+  $('active').classList.toggle('hidden', !c || holdActive);
+  if (c) {
+    $('a-title').textContent = c.exercise;
+    const r = rewardOf(c.durationMins);
+    $('a-reward').textContent = '+' + r + ' star' + (r > 1 ? 's' : '');
+    $('t-skip').classList.toggle('hidden', !S.demoMode);
+    paintTimer();
+  }
+
+  $('st-w').textContent = S.workouts; $('st-m').textContent = S.minutes; $('st-b').textContent = S.bestStreak;
+  $('tip').classList.toggle('hidden', S.tipDismissed || !/iphone|ipad/i.test(navigator.userAgent) || navigator.standalone === true);
+  $('h-count').textContent = S.history.length ? 'Last ' + Math.min(12, S.history.length) : '';
+  $('history').innerHTML = S.history.length ? S.history.slice(0, 12).map(h => {
+    const w = h.type === 'completed';
+    return `<div class="row"><div class="t" style="${w ? '' : 'color:var(--bad)'}">${esc(h.title)}<div class="muted">${esc(whenOf(h))}</div></div><b style="font-size:13px;color:${w ? 'var(--ok)' : 'var(--bad)'}">${esc(h.badge)}</b></div>`;
+  }).join('') : '<p class="muted" style="text-align:center;padding:8px 0">No workouts yet. Spin to get started.</p>';
+
+  renderLists();
+  document.querySelectorAll('[data-theme-v]').forEach(b => b.classList.toggle('on', b.dataset.themeV === S.theme));
+  $('sw-sound').setAttribute('aria-checked', S.soundEnabled);
+  $('sw-demo').setAttribute('aria-checked', S.demoMode);
+}
+function renderLists() {
+  const a = document.activeElement;
+  if (a !== $('min-t')) $('min-t').value = S.minTime;
+  if (a !== $('max-t')) $('max-t').value = S.maxTime;
+  $('n-ex').textContent = S.exercises.length; $('n-ff').textContent = S.forfeits.length;
+  $('sub-ex').classList.toggle('on', tab === 'exercises'); $('sub-ff').classList.toggle('on', tab === 'forfeits');
+  $('new-item').placeholder = tab === 'exercises' ? 'Add an exercise' : 'Add a forfeit';
+  const list = S[tab];
+  $('items').innerHTML = list.length ? list.map((it, i) => editIdx === i
+    ? `<div class="item"><input id="edit-in" type="text" maxlength="65" value="${esc(it)}" aria-label="Edit item"><button class="icon" data-save="${i}" aria-label="Save" style="color:var(--ok)">${ic('check')}</button><button class="icon" data-cancel="1" aria-label="Cancel">${ic('x')}</button></div>`
+    : `<div class="item"><span class="t">${esc(it)}</span><button class="icon" data-edit="${i}" aria-label="Edit">${ic('edit')}</button><button class="icon bad" data-del="${i}" aria-label="Delete">${ic('trash')}</button></div>`
+  ).join('') : '<p class="muted" style="text-align:center;padding:12px 0">This list is empty. Add an item above.</p>';
+  if (focusEdit) { focusEdit = false; const e = $('edit-in'); if (e) { e.focus(); e.select(); } }
+}
+function switchTab(t) {
+  ['play', 'lists', 'settings'].forEach(k => $('tab-' + k).classList.toggle('on', k === t));
+  document.querySelectorAll('.dock button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  scrollTo(0, 0);
+}
+
+/* ---------- spin ---------- */
+async function spin() {
+  if (spinning) return;
+  if (!S.exercises.length) { toast('Add at least one exercise first'); switchTab('lists'); return; }
+  const c = S.currentChallenge;
+  if (c && c.remainingSeconds < c.totalSeconds || running()) {
+    if (!(await ask('Replace this workout?', 'Your current timer progress will be lost.', 'Spin again'))) return;
+  }
+  pauseTimer(); S.currentChallenge = null; spinning = true; persist(); render();
+  const btn = $('spin'); btn.disabled = true; $('spin-label').textContent = 'Spinning';
+  $('slot-kicker').textContent = 'Choosing…';
+  const durs = []; for (let m = S.minTime; m <= S.maxTime; m += S.timeStep || 5) durs.push(m);
+  if (durs[durs.length - 1] !== S.maxTime && durs.length < 2) durs.push(S.maxTime);
+  const pool = S.exercises.length > 1 ? S.exercises.filter(x => x !== lastEx) : S.exercises;
+  const ex = pool[Math.floor(Math.random() * pool.length)]; lastEx = ex;
+  const mins = durs[Math.floor(Math.random() * durs.length)];
+  let n = 0;
+  (function reel() {
+    n++;
+    $('slot-ex').textContent = S.exercises[n % S.exercises.length];
+    $('slot-dur').textContent = S.demoMode ? '15 sec test' : durs[Math.floor(Math.random() * durs.length)] + ' min';
+    playTick(380 + n * 18);
+    if (n < 18) return setTimeout(reel, 45 + n * 8);
+    $('slot-kicker').textContent = 'Locked in';
+    $('slot-ex').textContent = ex;
+    $('slot-dur').textContent = S.demoMode ? mins + ' min (15 sec test)' : mins + ' min';
+    const total = S.demoMode ? 15 : mins * 60;
+    S.currentChallenge = { exercise: ex, durationMins: mins, totalSeconds: total, remainingSeconds: total, endAt: null };
+    holdActive = true; fanfare(); save();
+    setTimeout(() => { holdActive = false; spinning = false; btn.disabled = false; render(); scrollTo(0, 0); }, 2600);
+  })();
+}
+
+/* ---------- resolve ---------- */
+async function resolve(win) {
+  const c = S.currentChallenge; if (!c) return;
+  if (win && rem() > 0 && !S.demoMode && !(await ask('Timer still running', 'Log this workout as complete anyway?', 'Mark complete'))) return;
+  if (!win && !(await ask('Bail out?', 'You will get a random forfeit and your streak resets.', 'Bail out', true))) return;
+  if (!S.currentChallenge) return;
+  pauseTimer();
+  const now = Date.now(), time = new Date(now).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (win) {
+    const e = rewardOf(c.durationMins);
+    S.stars += e; S.streak += 1; S.workouts += 1; S.bestStreak = Math.max(S.bestStreak, S.streak);
+    if (!S.demoMode) S.minutes += c.durationMins;
+    S.history.unshift({ id: now, type: 'completed', title: c.durationMins + ' min ' + c.exercise, badge: '+' + e + ' star' + (e > 1 ? 's' : ''), time, at: now });
+    S.history = S.history.slice(0, 100); S.currentChallenge = null; save(); fanfare(); confetti();
+    sheet({ icon: 'star', kicker: 'Streak: ' + S.streak, title: '+' + e + ' star' + (e > 1 ? 's' : '') + ' earned', body: 'You finished ' + c.durationMins + ' min of ' + c.exercise + '.', actions: [{ label: 'Continue', cls: 'btn-p' }] });
+  } else {
+    const pool = S.forfeits.length ? S.forfeits : DEF_FF;
+    const f = pool[Math.floor(Math.random() * pool.length)];
+    S.streak = 0;
+    S.activeDebts.unshift({ id: now, title: f, skipped: c.durationMins + ' min ' + c.exercise });
+    S.history.unshift({ id: now + 1, type: 'forfeit', title: 'Forfeit: ' + f, badge: 'Bailed', time, at: now });
+    S.history = S.history.slice(0, 100); S.currentChallenge = null; save(); buzzer();
+    sheet({ icon: 'alert', kicker: 'Workout skipped', title: 'Forfeit assigned', body: 'Your random forfeit:', hl: f, actions: [{ label: 'Continue', cls: 'btn-p' }] });
+  }
+}
+
+/* ---------- backup ---------- */
+function restore(raw) {
+  try {
+    const p = JSON.parse(raw), d = p && (Array.isArray(p.exercises) ? p : p.data);
+    if (!d || !Array.isArray(d.exercises)) { toast('That is not a valid backup'); return; }
+    ask('Replace current data?', 'Restoring overwrites your lists, settings and progress.', 'Restore', true).then(ok => {
+      if (!ok) return;
+      pauseTimer(); S = clean(d); save(); fanfare(); toast('Backup restored');
+    });
+  } catch (e) { toast('Could not read that backup'); }
+}
+const dump = () => JSON.stringify(S, null, 2);
+
+/* ---------- events ---------- */
+document.querySelectorAll('.dock button').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+$('tip-x').onclick = () => { S.tipDismissed = true; save(); };
+$('to-lists').onclick = () => switchTab('lists');
+$('spin').onclick = spin;
+$('t-start').onclick = () => { if (!S.currentChallenge) return; if (running()) pauseTimer(); else { startTimer(); render(); } };
+$('t-reset').onclick = () => { const c = S.currentChallenge; if (!c) return; pauseTimer(); c.remainingSeconds = c.totalSeconds; save(); };
+$('t-skip').onclick = () => { const c = S.currentChallenge; if (!c) return; pauseTimer(); c.remainingSeconds = 0; save(); fanfare(); };
+$('done').onclick = () => resolve(true);
+$('bail').onclick = () => resolve(false);
+$('debt-list').onclick = e => {
+  const b = e.target.closest('[data-pay]'); if (!b) return;
+  S.activeDebts = S.activeDebts.filter(d => d.id !== Number(b.dataset.pay));
+  fanfare(); confetti(); save(); toast('Forfeit cleared');
+};
+
+function setTimes() {
+  const lo = parseInt($('min-t').value, 10), hi = parseInt($('max-t').value, 10);
+  S.minTime = Math.min(120, Math.max(1, Number.isNaN(lo) ? S.minTime : lo));
+  S.maxTime = Math.min(180, Math.max(S.minTime + 1, Number.isNaN(hi) ? S.maxTime : hi));
+  $('min-t').blur(); $('max-t').blur(); save(); toast('Time window saved');
+}
+$('min-t').onchange = setTimes; $('max-t').onchange = setTimes;
+
+$('sub-ex').onclick = () => { tab = 'exercises'; editIdx = null; renderLists(); };
+$('sub-ff').onclick = () => { tab = 'forfeits'; editIdx = null; renderLists(); };
+$('add-form').onsubmit = e => {
+  e.preventDefault();
+  const v = $('new-item').value.trim(); if (!v) return;
+  if (S[tab].some(x => x.toLowerCase() === v.toLowerCase())) { toast('Already in the list'); return; }
+  S[tab].unshift(v); $('new-item').value = ''; save(); toast('Added');
+};
+$('bulk-toggle').onclick = () => $('bulk').classList.toggle('hidden');
+$('bulk-cancel').onclick = () => $('bulk').classList.add('hidden');
+$('bulk-save').onclick = () => {
+  const have = new Set(S[tab].map(x => x.toLowerCase()));
+  const add = [];
+  $('bulk-text').value.split('\n').map(s => s.trim().slice(0, 65)).filter(Boolean).forEach(l => { if (!have.has(l.toLowerCase())) { have.add(l.toLowerCase()); add.push(l); } });
+  if (!add.length) { toast('Nothing new to add'); return; }
+  S[tab] = add.concat(S[tab]); $('bulk-text').value = ''; $('bulk').classList.add('hidden'); save(); toast('Added ' + add.length + ' items');
+};
+$('items').onclick = e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.edit) { editIdx = +t.dataset.edit; focusEdit = true; renderLists(); }
+  else if (t.dataset.cancel) { editIdx = null; renderLists(); }
+  else if (t.dataset.save) {
+    const v = $('edit-in').value.trim(); if (!v) return;
+    S[tab][+t.dataset.save] = v; editIdx = null; save(); toast('Updated');
+  } else if (t.dataset.del) {
+    const i = +t.dataset.del, name = tab, [val] = S[name].splice(i, 1);
+    editIdx = null; save();
+    toast('Removed', 'Undo', () => { S[name].splice(Math.min(i, S[name].length), 0, val); save(); });
+  }
+};
+$('items').onkeydown = e => {
+  if (e.target.id !== 'edit-in') return;
+  if (e.key === 'Enter') { e.preventDefault(); const b = document.querySelector('[data-save]'); if (b) b.click(); }
+  if (e.key === 'Escape') { editIdx = null; renderLists(); }
+};
+
+document.querySelectorAll('[data-theme-v]').forEach(b => b.onclick = () => { S.theme = b.dataset.themeV; save(); });
+$('sw-sound').onclick = () => { S.soundEnabled = !S.soundEnabled; save(); if (S.soundEnabled) playTick(660); };
+$('sw-demo').onclick = () => { S.demoMode = !S.demoMode; save(); toast(S.demoMode ? 'Test timer on: new spins last 15 seconds' : 'Test timer off'); };
+
+$('exp').onclick = async () => {
+  const name = 'workout-roulette-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  const file = new File([JSON.stringify({ app: 'workout-roulette', version: 1, exportedAt: new Date().toISOString(), data: S }, null, 2)], name, { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); toast('Backup exported'); return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const u = URL.createObjectURL(file), a = document.createElement('a');
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000);
+  toast('Backup exported');
+};
+$('imp').onchange = e => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = ev => restore(ev.target.result); r.readAsText(f); e.target.value = '';
+};
+
+$('reset-stats').onclick = async () => {
+  if (!(await ask('Clear progress?', 'Stars, streak, forfeits, history and the current workout will be removed. Your lists stay.', 'Clear progress', true))) return;
+  pauseTimer(); Object.assign(S, { stars: 0, streak: 0, workouts: 0, minutes: 0, bestStreak: 0, activeDebts: [], history: [], currentChallenge: null }); save(); toast('Progress cleared');
+};
+$('reset-all').onclick = async () => {
+  if (!(await ask('Reset everything?', 'Lists, settings and progress return to their defaults. This cannot be undone.', 'Reset everything', true))) return;
+  pauseTimer(); const t = S.theme; S = fresh(); S.theme = t; save(); toast('Reset complete');
+};
+
+if ('serviceWorker' in navigator && /^https?:/.test(location.protocol)) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+render();
+if (running()) loop();
+})();
+</script>
+</body>
+</html>
